@@ -331,7 +331,7 @@
   .lang-en [data-lang-block="en"] { display: block; }
 </style>
 </head>
-<body class="lang-es">
+<body class="lang-es light">
 
 <!-- Controls: language + theme -->
 <div class="controls">
@@ -729,7 +729,8 @@
   /* Restaura tema guardado al cargar */
   (function() {
     const saved = localStorage.getItem('theme');
-    if (saved === 'light') setTheme('light');
+    if (saved === 'dark') setTheme('dark');
+    else setTheme('light');;
   })();
 
   /* Telemetría */
