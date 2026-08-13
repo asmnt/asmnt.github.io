@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agustina Simonet — Data Analyst · Motorsport</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,500;0,700;0,900;1,700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ═══════════════════════════════════════
+     TOKENS — Dark (default)
+  ═══════════════════════════════════════ */
+  :root {
+    --bg:        #141414;
+    --surface:   #1c1a18;
+    --card:      #272420;
+    --border:    #312e2b;
+    --text:      #eeeae4;
+    --muted:     #7a7570;
+    --accent:     #5bb8ff;
+    --accent-dark: #5bb8ff;
+    --accent-on:  #001830;
+    --green:     #00c853;
+    --nav-bg:    rgba(20,20,20,.95);
+
+    --display: 'Barlow Condensed', sans-serif;
+    --body:    'Inter', sans-serif;
+    --mono:    'JetBrains Mono', monospace;
+    --max: 920px;
+  }
+
+  /* ═══════════════════════════════════════
+     TOKENS — Light
+     Para cambiar la paleta light, solo
+     editá los valores dentro de este bloque
+  ═══════════════════════════════════════ */
+  body.light {
+    --bg:        #f5f4f0;
+    --surface:   #eceae4;
+    --card:      #ffffff;
+    --border:    #ddd9cf;
+    --text:      #0e0e0e;
+    --muted:     #6b6560;
+    --accent:     #1565c0;
+    --accent-dark: #1565c0;
+    --accent-on:  #ffffff;
+    --green:     #1a7a3e;
+    --nav-bg:    rgba(245,244,240,.95);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 1rem;
+    line-height: 1.6;
+    transition: background .3s, color .3s;
+  }
+
+  /* ── Controls bar (lang + theme) ── */
+  .controls {
+    position: fixed;
+    top: .9rem;
+    right: 1.5rem;
+    z-index: 200;
+    display: flex;
+    gap: .4rem;
+  }
+  .ctrl-group {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .ctrl-btn {
+    padding: .32rem .75rem;
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .1em;
+    background: var(--card);
+    color: var(--muted);
+    border: none;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+    line-height: 1;
+  }
+  .ctrl-btn + .ctrl-btn { border-left: 1px solid var(--border); }
+  .ctrl-btn.active { background: var(--accent); color: var(--accent-on); font-weight: 500; }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--nav-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .8rem 2rem;
+    transition: background .3s, border-color .3s;
+  }
+  .nav-brand { font-family: var(--mono); font-size: .8rem; color: var(--accent); text-decoration: none; letter-spacing: .06em; transition: color .3s; }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .nav-links a { font-family: var(--display); font-size: .95rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 620px) { .nav-links { display: none; } }
+
+  /* ── Hero ── */
+  .hero { position: relative; overflow: hidden; padding: 5.5rem 2rem 4rem; max-width: var(--max); margin: 0 auto; }
+  .telemetry-bg { position: absolute; bottom: 0; left: 0; right: 0; height: 120px; opacity: .1; pointer-events: none; transition: opacity .3s; }
+  body.light .telemetry-bg { opacity: .15; }
+
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: .75rem; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: .75rem; display: flex; align-items: center; gap: .6rem; transition: color .3s;
+  }
+  .hero-eyebrow::before { content: ''; display: inline-block; width: 24px; height: 2px; background: var(--accent); transition: background .3s; }
+
+  h1 { font-family: var(--display); font-size: clamp(3rem, 9vw, 5.5rem); font-weight: 900; line-height: .95; text-transform: uppercase; letter-spacing: -.01em; margin-bottom: .5rem; }
+  .hero-role { font-family: var(--display); font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-bottom: 1.25rem; transition: color .3s; }
+  .hero-sub { font-size: .95rem; color: var(--muted); max-width: 520px; margin-bottom: 2rem; line-height: 1.75; transition: color .3s; }
+
+  .stat-strip { display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 2.5rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; max-width: 560px; transition: border-color .3s; }
+  .stat-item { flex: 1; min-width: 100px; padding: .75rem 1rem; border-right: 1px solid var(--border); transition: border-color .3s; }
+  .stat-item:last-child { border-right: none; }
+  .stat-val { font-family: var(--mono); font-size: 1rem; font-weight: 500; color: var(--accent); display: block; transition: color .3s; }
+  .stat-lbl { font-family: var(--mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); transition: color .3s; }
+
+  .cta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: .65rem 1.4rem; font-family: var(--display); font-weight: 700; font-size: 1rem; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; border-radius: 4px; transition: opacity .2s, transform .15s, background .3s, color .3s, border-color .3s; cursor: pointer; border: none; }
+  .btn:hover { opacity: .85; transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: var(--accent-on); }
+  .btn-outline  { border: 1.5px solid var(--border); color: var(--text); background: transparent; }
+
+  /* ── Section ── */
+  section { max-width: var(--max); margin: 0 auto; padding: 4rem 2rem; border-top: 1px solid var(--border); transition: border-color .3s; }
+  .section-eyebrow { font-family: var(--mono); font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin-bottom: .6rem; display: flex; align-items: center; gap: .5rem; transition: color .3s; }
+  .section-eyebrow::before { content: ''; display: inline-block; width: 16px; height: 1.5px; background: var(--accent); transition: background .3s; }
+  h2 { font-family: var(--display); font-size: clamp(1.8rem, 4.5vw, 2.8rem); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; margin-bottom: .75rem; line-height: 1.1; }
+  .section-intro { color: var(--muted); max-width: 540px; margin-bottom: 2.5rem; font-size: .92rem; transition: color .3s; }
+
+  /* ── Summary box ── */
+  .summary-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.75rem; font-size: .95rem; line-height: 1.85; color: var(--muted); transition: background .3s, border-color .3s, color .3s; }
+  .summary-box strong { color: var(--text); transition: color .3s; }
+
+  /* ── About grid ── */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: background .3s, border-color .3s; }
+  @media (max-width: 580px) { .about-grid { grid-template-columns: 1fr; } }
+  .about-card { background: var(--card); padding: 1.5rem; transition: background .3s; }
+  .about-card h3 { font-family: var(--display); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-bottom: .5rem; transition: color .3s; }
+  .about-card p, .about-card span[data-lang-block] { font-size: .88rem; color: var(--muted); line-height: 1.75; transition: color .3s; }
+
+  /* ── Timeline ── */
+  .timeline { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: background .3s, border-color .3s; }
+  .timeline-item { background: var(--card); transition: background .3s; }
+  .timeline-meta { display: flex; gap: 0; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: .67rem; text-transform: uppercase; letter-spacing: .09em; overflow-x: auto; transition: border-color .3s; }
+  .tm-cell { padding: .4rem .85rem; border-right: 1px solid var(--border); white-space: nowrap; color: var(--muted); transition: color .3s, border-color .3s; }
+  .tm-cell:last-child { border-right: none; }
+  .tm-cell strong { color: var(--text); font-weight: 500; transition: color .3s; }
+  .tm-cell.current strong { color: var(--green); }
+  .timeline-body { padding: 1.25rem 1.5rem; }
+  .timeline-body h3 { font-family: var(--display); font-size: 1.25rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem; }
+  .timeline-body .company { font-family: var(--mono); font-size: .78rem; color: var(--accent); margin-bottom: .75rem; letter-spacing: .05em; transition: color .3s; }
+  .timeline-body ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .35rem; }
+  .timeline-body li { font-size: .88rem; color: var(--muted); line-height: 1.6; transition: color .3s; }
+  .timeline-body li strong { color: var(--text); transition: color .3s; }
+
+  /* ── Skills ── */
+  .skills-group { margin-bottom: 2rem; }
+  .skills-group:last-child { margin-bottom: 0; }
+  .skills-group-label { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: .75rem; display: flex; align-items: center; gap: .6rem; transition: color .3s; }
+  .skills-group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); transition: background .3s; }
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+  .skill-chip { background: var(--card); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px 10px 10px; display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; transition: border-color .2s, background .3s; cursor: default; }
+  .skill-chip:hover { border-color: var(--accent); }
+  .skill-chip i { font-size: 22px; color: var(--muted); transition: color .2s; }
+  .skill-chip:hover i { color: var(--accent); }
+  .skill-chip-name { font-family: var(--display); font-size: .88rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text); }
+
+  /* ── Projects ── */
+  .projects-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: background .3s, border-color .3s; }
+  .dossier { background: var(--card); transition: background .2s; }
+  .dossier:hover { background: var(--surface); }
+  .dossier-meta { display: flex; gap: 0; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: .67rem; text-transform: uppercase; letter-spacing: .09em; overflow-x: auto; transition: border-color .3s; }
+  .dm-cell { padding: .42rem .85rem; border-right: 1px solid var(--border); white-space: nowrap; color: var(--muted); transition: color .3s, border-color .3s; }
+  .dm-cell:last-child { border-right: none; }
+  .dm-cell strong { color: var(--text); font-weight: 500; transition: color .3s; }
+  .dm-cell.prog strong { color: var(--accent); }
+  .dm-cell.plan strong { color: var(--muted); }
+  .dossier-body { padding: 1.4rem 1.5rem; }
+  .dossier-body h3 { font-family: var(--display); font-size: 1.4rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .5rem; }
+  .dossier-body p { font-size: .88rem; color: var(--muted); line-height: 1.7; margin-bottom: .9rem; transition: color .3s; }
+  .tool-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+  .tool-chip { font-family: var(--mono); font-size: .66rem; padding: .2rem .6rem; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; transition: background .3s, border-color .3s, color .3s; }
+  .dossier-link { font-family: var(--display); font-size: .88rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); text-decoration: none; transition: color .3s; }
+  .dossier-link:hover { text-decoration: underline; }
+  .dossier-link.dim { color: var(--muted); pointer-events: none; }
+
+  /* ── Education ── */
+  .edu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: background .3s, border-color .3s; }
+  @media (max-width: 580px) { .edu-grid { grid-template-columns: 1fr; } }
+  .edu-cell { background: var(--card); padding: 1.25rem 1.4rem; transition: background .3s; }
+  .edu-cell h3 { font-family: var(--display); font-size: 1.05rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem; }
+  .edu-cell .inst { font-family: var(--mono); font-size: .7rem; color: var(--accent); letter-spacing: .06em; margin-bottom: .4rem; transition: color .3s; }
+  .edu-cell p { font-size: .83rem; color: var(--muted); transition: color .3s; }
+  .cert-list { margin-top: 1px; background: var(--border); }
+  .cert-item { background: var(--card); padding: .7rem 1.4rem; border-top: 1px solid var(--border); font-size: .85rem; display: flex; align-items: center; gap: .75rem; color: var(--muted); transition: background .3s, border-color .3s, color .3s; }
+  .cert-item::before { content: '✓'; color: var(--accent); font-family: var(--mono); font-size: .8rem; flex-shrink: 0; transition: color .3s; }
+
+  /* ── Contact ── */
+  .contact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: background .3s, border-color .3s; }
+  .contact-cell { background: var(--card); padding: 1.2rem 1.3rem; text-decoration: none; color: var(--text); transition: background .2s, color .3s; display: flex; flex-direction: column; gap: .25rem; }
+  .contact-cell:hover { background: var(--surface); }
+  .contact-label { font-family: var(--mono); font-size: .63rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); transition: color .3s; }
+  .contact-value { font-family: var(--display); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .contact-value .arr { color: var(--accent); transition: color .3s; }
+
+  /* ── Footer ── */
+  footer { border-top: 1px solid var(--border); text-align: center; padding: 2rem; font-family: var(--mono); font-size: .7rem; color: var(--muted); letter-spacing: .08em; transition: border-color .3s, color .3s; }
+  footer span { color: var(--accent); transition: color .3s; }
+
+  /* ══════════════════════════════════════
+     MOBILE — 480px y menos
+  ══════════════════════════════════════ */
+  @media (max-width: 480px) {
+
+    /* Controles: más chicos, pegados arriba */
+    .controls { top: .6rem; right: .75rem; gap: .3rem; }
+    .ctrl-btn  { padding: .28rem .6rem; font-size: .65rem; }
+
+    /* Nav: solo el brand, sin links */
+    nav { padding: .7rem 1rem; }
+    .nav-links { display: none; }
+    .nav-brand { font-size: .75rem; }
+
+    /* Hero: menos padding, tipografía más chica */
+    .hero { padding: 4.5rem 1.25rem 2.5rem; }
+    h1    { font-size: clamp(2.4rem, 14vw, 3.2rem); }
+    .hero-role { font-size: clamp(1rem, 5vw, 1.4rem); }
+    .hero-sub  { font-size: .88rem; margin-bottom: 1.5rem; }
+
+    /* Stat strip: 2 columnas en lugar de 4 */
+    .stat-strip { max-width: 100%; }
+    .stat-item  {
+      min-width: calc(50% - 1px);
+      flex: none;
+      width: 50%;
+    }
+    .stat-item:nth-child(2) { border-right: none; }
+    .stat-item:nth-child(3) { border-top: 1px solid var(--border); }
+    .stat-item:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+
+    /* Botones CTA: full width apilados */
+    .cta-row { flex-direction: column; }
+    .btn      { text-align: center; width: 100%; }
+
+    /* Secciones: menos padding */
+    section { padding: 2.5rem 1.25rem; }
+    h2      { font-size: clamp(1.5rem, 8vw, 2rem); }
+    .section-intro { margin-bottom: 1.5rem; }
+
+    /* About grid: ya colapsa a 1 col, solo ajustamos padding */
+    .about-card { padding: 1.1rem; }
+
+    /* Skills grid: 2 columnas */
+    .skills-grid { grid-template-columns: 1fr 1fr; }
+
+    /* Timeline meta-strip: scroll horizontal suave */
+    .timeline-meta {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .timeline-meta::-webkit-scrollbar { display: none; }
+    .timeline-body { padding: 1rem 1.1rem; }
+    .timeline-body h3 { font-size: 1.05rem; }
+    .timeline-body li { font-size: .83rem; }
+
+    /* Dossiers: meta-strip scrolleable */
+    .dossier-meta {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .dossier-meta::-webkit-scrollbar { display: none; }
+    .dossier-body { padding: 1.1rem; }
+    .dossier-body h3 { font-size: 1.15rem; }
+
+    /* Edu grid: ya colapsa, ajustar padding */
+    .edu-cell { padding: 1rem 1.1rem; }
+
+    /* Cert items */
+    .cert-item { padding: .6rem 1.1rem; font-size: .8rem; }
+
+    /* Contact grid: 1 columna */
+    .contact-grid { grid-template-columns: 1fr; }
+    .contact-cell { padding: 1rem 1.1rem; }
+
+    /* Footer */
+    footer { padding: 1.5rem 1.25rem; font-size: .65rem; }
+  }
+
+  /* ══════════════════════════════════════
+     TABLET — 481px a 768px
+  ══════════════════════════════════════ */
+  @media (min-width: 481px) and (max-width: 768px) {
+
+    .controls { top: .7rem; right: 1rem; }
+
+    .hero { padding: 5rem 1.5rem 3rem; }
+    h1    { font-size: clamp(2.8rem, 10vw, 4rem); }
+
+    section { padding: 3rem 1.5rem; }
+
+    .skills-grid { grid-template-columns: repeat(3, 1fr); }
+
+    .timeline-meta { overflow-x: auto; scrollbar-width: none; }
+    .timeline-meta::-webkit-scrollbar { display: none; }
+
+    .dossier-meta { overflow-x: auto; scrollbar-width: none; }
+    .dossier-meta::-webkit-scrollbar { display: none; }
+
+    .contact-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ── i18n ── */
+  [data-lang] { display: none; }
+  .lang-es [data-lang="es"],
+  .lang-en [data-lang="en"] { display: initial; }
+  [data-lang-block] { display: none; }
+  .lang-es [data-lang-block="es"],
+  .lang-en [data-lang-block="en"] { display: block; }
+</style>
+</head>
+<body class="lang-es">
+
+<!-- Controls: language + theme -->
+<div class="controls">
+  <div class="ctrl-group">
+    <button class="ctrl-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+    <button class="ctrl-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+  <div class="ctrl-group">
+    <button class="ctrl-btn active" id="btn-dark" onclick="setTheme('dark')" title="Modo oscuro">☾</button>
+    <button class="ctrl-btn" id="btn-light" onclick="setTheme('light')" title="Modo claro">☀</button>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="#">SIMONET.DATA</a>
+  <ul class="nav-links">
+    <li><a href="#about"><span data-lang="es">Perfil</span><span data-lang="en">Profile</span></a></li>
+    <li><a href="#experience"><span data-lang="es">Experiencia</span><span data-lang="en">Experience</span></a></li>
+    <li><a href="#skills"><span data-lang="es">Habilidades</span><span data-lang="en">Skills</span></a></li>
+    <li><a href="#projects"><span data-lang="es">Proyectos</span><span data-lang="en">Projects</span></a></li>
+    <li><a href="#education"><span data-lang="es">Educación</span><span data-lang="en">Education</span></a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <svg class="telemetry-bg" viewBox="0 0 900 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <polyline id="telem" fill="none" stroke="#f5a623" stroke-width="2" points=""/>
+  </svg>
+  <p class="hero-eyebrow">Buenos Aires, Argentina · Motorsport Data</p>
+  <h1>Agustina<br />Simonet</h1>
+  <p class="hero-role">
+    <span data-lang="es">Analista de Datos · Rendimiento &amp; Estrategia</span>
+    <span data-lang="en">Data Analyst · Performance &amp; Strategy</span>
+  </p>
+  <p class="hero-sub">
+    <span data-lang="es">Lic. en Relaciones Internacionales, estudiante de Ingeniería Mecánica y analista senior en Accenture con foco en movilidad. Combino rigor analítico, comunicación técnica y pasión genuina por el automovilismo para construir una carrera en análisis de datos para competición.</span>
+    <span data-lang="en">International Relations graduate, Mechanical Engineering student, and Senior Operations Analyst at Accenture with a mobility focus. I combine analytical rigor, technical communication, and a genuine passion for motorsport to build a career in competitive data analysis.</span>
+  </p>
+  <div class="stat-strip">
+    <div class="stat-item">
+      <span class="stat-val">8+</span>
+      <span class="stat-lbl"><span data-lang="es">Años exp.</span><span data-lang="en">Yrs exp.</span></span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">C1</span>
+      <span class="stat-lbl"><span data-lang="es">Inglés</span><span data-lang="en">English</span></span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">SQL·R</span>
+      <span class="stat-lbl"><span data-lang="es">Stack técnico</span><span data-lang="en">Tech stack</span></span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">UTN</span>
+      <span class="stat-lbl"><span data-lang="es">Ing. Mecánica</span><span data-lang="en">Mech. Eng.</span></span>
+    </div>
+  </div>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="#projects">
+      <span data-lang="es">Ver Proyectos</span><span data-lang="en">View Projects</span>
+    </a>
+    <a class="btn btn-outline" href="#contact">
+      <span data-lang="es">Contacto</span><span data-lang="en">Contact</span>
+    </a>
+  </div>
+</div>
+
+<!-- About -->
+<section id="about">
+  <p class="section-eyebrow"><span data-lang="es">Perfil Profesional</span><span data-lang="en">Professional Profile</span></p>
+  <h2><span data-lang="es">Sobre mí</span><span data-lang="en">About Me</span></h2>
+  <div class="summary-box">
+    <span data-lang-block="es">Licenciada en Relaciones Internacionales y estudiante de Ingeniería Mecánica en la UTN, con más de 8 años en análisis operativo y gestión de datos en Accenture. Empecé trabajando con datos de movilidad corporativa — y ahí entendí que el automovilismo es uno de los pocos deportes donde la decisión del analista se ejecuta en tiempo real y los resultados son inmediatos. Me interesan las variables que los modelos suelen ignorar: el tráfico en pista, la ventana climática, la degradación diferencial entre clases. Sigo F1, WRC y endurance porque cada disciplina tiene una lógica estratégica distinta. Trabajo con el ciclo completo — primero la pregunta correcta, después los datos — y documento cada paso para que los hallazgos sean reproducibles y explicables para cualquier audiencia.</span>
+    <span data-lang-block="en">International Relations graduate and Mechanical Engineering student at UTN, with 8+ years in operational analysis and data management at Accenture. I started working with corporate mobility data — and that's where I understood that motorsport is one of the few sports where the analyst's decision executes in real time and results are immediate. I'm drawn to the variables models tend to ignore: on-track traffic, weather windows, differential degradation across classes. I follow F1, WRC, and endurance because each discipline has a distinct strategic logic. I work through the full cycle — the right question first, then the data — and document every step so findings are reproducible and explainable to any audience.</span>
+  </div>
+</section>
+
+<!-- Experience -->
+<section id="experience">
+  <p class="section-eyebrow"><span data-lang="es">Trayectoria</span><span data-lang="en">Career</span></p>
+  <h2><span data-lang="es">Experiencia Profesional</span><span data-lang="en">Professional Experience</span></h2>
+  <div class="timeline">
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <div class="tm-cell"><span data-lang="es">Empresa</span><span data-lang="en">Company</span> <strong>Accenture</strong></div>
+        <div class="tm-cell"><span data-lang="es">Período</span><span data-lang="en">Period</span> <strong>Jun 2026 – <span data-lang="es">Presente</span><span data-lang="en">Present</span></strong></div>
+        <div class="tm-cell current"><span data-lang="es">Estado</span><span data-lang="en">Status</span> <strong><span data-lang="es">Actual</span><span data-lang="en">Current</span></strong></div>
+      </div>
+      <div class="timeline-body">
+        <h3>Business Operations Senior Analyst</h3>
+        <div class="company">ACCENTURE · BUENOS AIRES</div>
+        <ul>
+          <span data-lang-block="es">
+            <li>Comunicación de información técnica y operacional compleja a stakeholders de nivel ejecutivo, adaptando el mensaje según la audiencia.</li>
+            <li>Documentación de procesos, seguimiento de KPIs y generación de reportes con alta atención al detalle.</li>
+            <li>Gestión simultánea de múltiples proyectos garantizando cumplimiento de plazos y calidad de entrega.</li>
+            <li>Traducción de requerimientos técnicos en soluciones claras y accionables para equipos multidisciplinarios.</li>
+          </span>
+          <span data-lang-block="en">
+            <li>Communicating complex technical and operational information to executive stakeholders, adapting the message to the audience.</li>
+            <li>Process documentation, KPI tracking, and high-detail reporting in high-demand environments.</li>
+            <li>Managing multiple concurrent projects while meeting deadlines and delivery quality standards.</li>
+            <li>Translating technical requirements into clear, actionable solutions for cross-functional teams.</li>
+          </span>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <div class="tm-cell"><span data-lang="es">Empresa</span><span data-lang="en">Company</span> Accenture</div>
+        <div class="tm-cell"><span data-lang="es">Período</span><span data-lang="en">Period</span> Mar 2024 – Jun 2026</div>
+      </div>
+      <div class="timeline-body">
+        <h3>Business Operations Analyst</h3>
+        <div class="company">ACCENTURE · BUENOS AIRES</div>
+        <ul>
+          <span data-lang-block="es">
+            <li>Análisis de datos operacionales y de movilidad para identificar problemas, proponer soluciones y optimizar procesos internos.</li>
+            <li>Elaboración de reportes periódicos con documentación detallada de hallazgos y recomendaciones.</li>
+            <li>Colaboración con equipos internacionales en proyectos de transformación digital.</li>
+          </span>
+          <span data-lang-block="en">
+            <li>Operational and mobility data analysis to identify issues, propose solutions, and optimize internal processes.</li>
+            <li>Periodic reporting with detailed documentation of findings and recommendations.</li>
+            <li>Collaboration with international teams on digital transformation projects.</li>
+          </span>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <div class="tm-cell"><span data-lang="es">Empresa</span><span data-lang="en">Company</span> Accenture</div>
+        <div class="tm-cell"><span data-lang="es">Período</span><span data-lang="en">Period</span> Jul 2022 – Mar 2024</div>
+      </div>
+      <div class="timeline-body">
+        <h3>Business Operations Associate</h3>
+        <div class="company">ACCENTURE · BUENOS AIRES</div>
+        <ul>
+          <span data-lang-block="es">
+            <li>Gestión de operaciones diarias con foco en cumplimiento de SLAs y calidad del servicio.</li>
+            <li>Mantenimiento de registros operativos y actualización de sistemas de gestión.</li>
+            <li>Resolución de incidencias coordinando con equipos técnicos para garantizar continuidad.</li>
+          </span>
+          <span data-lang-block="en">
+            <li>Daily operations management focused on SLA compliance and service quality.</li>
+            <li>Maintaining operational records and updating management systems with accurate data.</li>
+            <li>Incident resolution coordinating with technical teams to ensure service continuity.</li>
+          </span>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <div class="tm-cell"><span data-lang="es">Empresa</span><span data-lang="en">Company</span> Accenture</div>
+        <div class="tm-cell"><span data-lang="es">Período</span><span data-lang="en">Period</span> Jul 2021 – Jul 2022</div>
+        <div class="tm-cell"><span data-lang="es">Área</span><span data-lang="en">Area</span> <span data-lang="es">Movilidad</span><span data-lang="en">Mobility</span></div>
+      </div>
+      <div class="timeline-body">
+        <h3>Mobility Analytics Associate</h3>
+        <div class="company">ACCENTURE · BUENOS AIRES</div>
+        <ul>
+          <span data-lang-block="es">
+            <li>Análisis de datos de movilidad corporativa e identificación de oportunidades de optimización de procesos y recursos.</li>
+            <li>Colaboración en proyectos de transformación digital orientados a la movilidad sostenible.</li>
+          </span>
+          <span data-lang-block="en">
+            <li>Corporate mobility data analysis and identification of process and resource optimization opportunities.</li>
+            <li>Collaboration on digital transformation projects oriented toward sustainable mobility.</li>
+          </span>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <div class="tm-cell"><span data-lang="es">Empresa</span><span data-lang="en">Company</span> <span data-lang="es">Cámara Argentino-Danesa</span><span data-lang="en">Argentine-Danish Chamber</span></div>
+        <div class="tm-cell"><span data-lang="es">Período</span><span data-lang="en">Period</span> Oct 2015 – Feb 2016</div>
+      </div>
+      <div class="timeline-body">
+        <h3>Benchmarking Analyst</h3>
+        <div class="company">CÁMARA ARGENTINO-DANESA DE INDUSTRIA Y COMERCIO</div>
+        <ul>
+          <span data-lang-block="es">
+            <li>Relevamiento y análisis comparativo de indicadores de industria con documentación detallada.</li>
+            <li>Redacción de informes técnicos bilingües (español e inglés) para audiencias corporativas.</li>
+          </span>
+          <span data-lang-block="en">
+            <li>Industry benchmarking and comparative indicator analysis with detailed documentation.</li>
+            <li>Drafting bilingual technical reports (Spanish and English) for corporate audiences.</li>
+          </span>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Skills -->
+<section id="skills">
+  <p class="section-eyebrow"><span data-lang="es">Stack Técnico</span><span data-lang="en">Technical Stack</span></p>
+  <h2><span data-lang="es">Habilidades &amp; Herramientas</span><span data-lang="en">Skills &amp; Tools</span></h2>
+  <p class="section-intro">
+    <span data-lang="es">Construidas en Accenture, certificaciones técnicas y formación en Ingeniería Mecánica — aplicadas al análisis de datos de competición.</span>
+    <span data-lang="en">Built through Accenture, technical certifications, and Mechanical Engineering studies — applied to competitive data analysis.</span>
+  </p>
+  <!-- Análisis de datos -->
+  <div class="skills-group">
+    <div class="skills-group-label"><span data-lang="es">Análisis de datos</span><span data-lang="en">Data analysis</span></div>
+    <div class="skills-grid">
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg><span class="skill-chip-name">SQL</span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><path d="M12 15h5a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2v-3"/><path d="M8 9v3a2 2 0 0 0 2 2h4a2 2 0 0 1 2 2v3"/><circle cx="9.5" cy="5.5" r=".5" fill="currentColor"/><circle cx="14.5" cy="18.5" r=".5" fill="currentColor"/></svg><span class="skill-chip-name">Python</span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><circle cx="8" cy="16" r="1.5"/><circle cx="13" cy="10" r="1.5"/><circle cx="17" cy="6" r="1.5"/><circle cx="10" cy="14" r="1.5"/></svg><span class="skill-chip-name">R</span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg><span class="skill-chip-name">Excel / Sheets</span></div>
+    </div>
+  </div>
+  <!-- Visualización -->
+  <div class="skills-group">
+    <div class="skills-group-label"><span data-lang="es">Visualización</span><span data-lang="en">Visualization</span></div>
+    <div class="skills-grid">
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="8"/><rect x="12" y="7" width="3" height="12"/><rect x="17" y="4" width="3" height="15"/></svg><span class="skill-chip-name">Power BI</span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="7,14 11,9 14,12 18,6"/></svg><span class="skill-chip-name">Tableau</span></div>
+    </div>
+  </div>
+  <!-- Motorsport -->
+  <div class="skills-group">
+    <div class="skills-group-label">Motorsport</div>
+    <div class="skills-grid">
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 10V4M8.5 13.5l-5 3M15.5 13.5l5 3"/></svg><span class="skill-chip-name">FastF1</span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg><span class="skill-chip-name"><span data-lang="es">Telemetría</span><span data-lang="en">Telemetry</span></span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5a5 5 0 0 1 7 0 5 5 0 0 0 7 0v13a5 5 0 0 1-7 0 5 5 0 0 0-7 0V5z"/><path d="M5 21v-3"/></svg><span class="skill-chip-name"><span data-lang="es">Estrategia</span><span data-lang="en">Strategy</span></span></div>
+    </div>
+  </div>
+  <!-- Operaciones -->
+  <div class="skills-group">
+    <div class="skills-group-label"><span data-lang="es">Operaciones</span><span data-lang="en">Operations</span></div>
+    <div class="skills-grid">
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M8 14h4M8 17h8"/></svg><span class="skill-chip-name"><span data-lang="es">Gestión de proyectos</span><span data-lang="en">Project management</span></span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="17" x2="9" y2="13"/><line x1="12" y1="17" x2="12" y2="11"/><line x1="15" y1="17" x2="15" y2="15"/></svg><span class="skill-chip-name">KPI Reporting</span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="skill-chip-name"><span data-lang="es">Com. Técnica</span><span data-lang="en">Tech Comms</span></span></div>
+      <div class="skill-chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4.418-2.239 8-5 8"/><path d="M11 15c1.054 1.2 2.91 2 5 2s3.946-.8 5-2"/><path d="M12 21l4-9 4 9M13.9 17h4.2"/></svg><span class="skill-chip-name">Inglés C1</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Projects -->
+<section id="projects">
+  <p class="section-eyebrow"><span data-lang="es">Dossiers de Análisis</span><span data-lang="en">Analysis Dossiers</span></p>
+  <h2><span data-lang="es">Proyectos</span><span data-lang="en">Projects</span></h2>
+  <p class="section-intro">
+    <span data-lang="es">Análisis aplicados al automovilismo — combinando el ciclo completo: pregunta → datos → proceso → insight → recomendación.</span>
+    <span data-lang="en">Motorsport-applied analyses — following the full cycle: question → data → process → insight → recommendation.</span>
+  </p>
+  <div class="projects-list">
+
+    <div class="dossier">
+      <div class="dossier-meta">
+        <div class="dm-cell"><span data-lang="es">Origen</span><span data-lang="en">Source</span> <strong>Google Capstone</strong></div>
+        <div class="dm-cell"><span data-lang="es">Dataset</span><span data-lang="en">Dataset</span> <strong>Cyclistic</strong></div>
+        <div class="dm-cell"><span data-lang="es">Foco</span><span data-lang="en">Focus</span> <strong><span data-lang="es">Comportamiento</span><span data-lang="en">Rider Behavior</span></strong></div>
+        <div class="dm-cell prog"><span data-lang="es">Estado</span><span data-lang="en">Status</span> <strong><span data-lang="es">En curso</span><span data-lang="en">In Progress</span></strong></div>
+      </div>
+      <div class="dossier-body">
+        <h3><span data-lang="es">Capstone: Análisis Cyclistic Bike-Share</span><span data-lang="en">Capstone: Cyclistic Bike-Share Analysis</span></h3>
+        <p>
+          <span data-lang="es">Análisis de 12 meses de datos de viajes para identificar diferencias de comportamiento entre miembros anuales y usuarios ocasionales, y proponer una estrategia de conversión. Las habilidades aplicadas son directamente transferibles al análisis de stint y rendimiento de equipos.</span>
+          <span data-lang="en">12-month trip data analysis to identify behavioral differences between annual members and casual riders, and recommend a conversion strategy. Skills directly transfer to stint analysis and team performance tracking.</span>
+        </p>
+        <div class="tool-row"><span class="tool-chip">R</span><span class="tool-chip">tidyverse</span><span class="tool-chip">ggplot2</span><span class="tool-chip">R Markdown</span></div>
+        <a class="dossier-link dim" href="#">↗ GitHub — <span data-lang="es">próximamente</span><span data-lang="en">coming soon</span></a>
+      </div>
+    </div>
+
+    <div class="dossier">
+      <div class="dossier-meta">
+        <div class="dm-cell"><span data-lang="es">Serie</span><span data-lang="en">Series</span> <strong>Formula 1</strong></div>
+        <div class="dm-cell"><span data-lang="es">Dataset</span><span data-lang="en">Dataset</span> <strong>FastF1 API</strong></div>
+        <div class="dm-cell"><span data-lang="es">Foco</span><span data-lang="en">Focus</span> <strong><span data-lang="es">Estrategia de pit</span><span data-lang="en">Pit Strategy</span></strong></div>
+        <div class="dm-cell plan"><span data-lang="es">Estado</span><span data-lang="en">Status</span> <strong><span data-lang="es">Planificado</span><span data-lang="en">Planned</span></strong></div>
+      </div>
+      <div class="dossier-body">
+        <h3><span data-lang="es">Undercut vs. Overcut: ¿Cuándo funciona?</span><span data-lang="en">Undercut vs. Overcut: When Does It Work?</span></h3>
+        <p>
+          <span data-lang="es">Modelado de datos de telemetría vuelta a vuelta para identificar qué condiciones predicen el éxito de un undercut o overcut: características del circuito, tráfico, delta de neumáticos y ventana de tiempo.</span>
+          <span data-lang="en">Lap-by-lap telemetry modeling to identify which conditions predict undercut/overcut success: circuit characteristics, traffic, tyre delta, and timing window.</span>
+        </p>
+        <div class="tool-row"><span class="tool-chip">Python</span><span class="tool-chip">FastF1</span><span class="tool-chip">pandas</span><span class="tool-chip">matplotlib</span><span class="tool-chip">Tableau</span></div>
+        <a class="dossier-link dim" href="#">↗ GitHub — <span data-lang="es">próximamente</span><span data-lang="en">coming soon</span></a>
+      </div>
+    </div>
+
+    <div class="dossier">
+      <div class="dossier-meta">
+        <div class="dm-cell"><span data-lang="es">Serie</span><span data-lang="en">Series</span> <strong>WRC / Le Mans</strong></div>
+        <div class="dm-cell"><span data-lang="es">Foco</span><span data-lang="en">Focus</span> <strong><span data-lang="es">Clima &amp; Ritmo</span><span data-lang="en">Weather &amp; Pace</span></strong></div>
+        <div class="dm-cell plan"><span data-lang="es">Estado</span><span data-lang="en">Status</span> <strong><span data-lang="es">Planificado</span><span data-lang="en">Planned</span></strong></div>
+      </div>
+      <div class="dossier-body">
+        <h3><span data-lang="es">El Clima Como Variable de Carrera</span><span data-lang="en">Weather as a Race Variable</span></h3>
+        <p>
+          <span data-lang="es">Correlación de cambios climáticos con tiempos de especial en WRC y ritmo de stint en carreras de resistencia. ¿Cuánto cuesta realmente una ventana de lluvia durante un ciclo de pits?</span>
+          <span data-lang="en">Correlating weather shifts with WRC stage times and endurance stint pace. How much does a rain window during a pit cycle actually cost?</span>
+        </p>
+        <div class="tool-row"><span class="tool-chip">SQL</span><span class="tool-chip">BigQuery</span><span class="tool-chip">R</span><span class="tool-chip">Tableau</span></div>
+        <a class="dossier-link dim" href="#">↗ GitHub — <span data-lang="es">próximamente</span><span data-lang="en">coming soon</span></a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Education -->
+<section id="education">
+  <p class="section-eyebrow"><span data-lang="es">Formación</span><span data-lang="en">Education</span></p>
+  <h2><span data-lang="es">Educación &amp; Certificaciones</span><span data-lang="en">Education &amp; Certifications</span></h2>
+  <div class="edu-grid">
+    <div class="edu-cell">
+      <h3><span data-lang="es">Ingeniería Mecánica</span><span data-lang="en">Mechanical Engineering</span></h3>
+      <div class="inst">UTN FRGP · 2024 – <span data-lang="es">Presente</span><span data-lang="en">Present</span></div>
+      <p><span data-lang="es">Mecánica aplicada, materiales, sistemas de propulsión y mantenimiento de maquinaria y vehículos.</span><span data-lang="en">Applied mechanics, materials science, propulsion systems, and vehicle maintenance.</span></p>
+    </div>
+    <div class="edu-cell">
+      <h3><span data-lang="es">Lic. Relaciones Internacionales</span><span data-lang="en">B.A. International Relations</span></h3>
+      <div class="inst">Universidad de Palermo · 2013 – 2019</div>
+      <p><span data-lang="es">Análisis político, negociación, comunicación internacional y pensamiento sistémico.</span><span data-lang="en">Political analysis, negotiation, international communication, and systemic thinking.</span></p>
+    </div>
+  </div>
+  <div class="cert-list">
+    <div class="cert-item">Google Data Analytics Certificate — Coursera <span style="color:var(--accent);margin-left:.5rem;font-family:var(--mono);font-size:.7rem;transition:color .3s;">IN PROGRESS</span></div>
+    <div class="cert-item">Python for Data Science, AI &amp; Development — IBM / Coursera</div>
+    <div class="cert-item">Python Developer Essentials Immersive Bootcamp</div>
+    <div class="cert-item">Automate the Boring Stuff with Python Programming</div>
+    <div class="cert-item">HTML &amp; CSS — Certification Course for Beginners</div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <p class="section-eyebrow">Pit Wall</p>
+  <h2><span data-lang="es">Contacto</span><span data-lang="en">Contact</span></h2>
+  <p class="section-intro">
+    <span data-lang="es">Abierta a roles de analista, pasantías y colaboraciones — en cualquier serie, a cualquier nivel del paddock.</span>
+    <span data-lang="en">Open to analyst roles, internships, and collaborations — in any series, at any level of the paddock.</span>
+  </p>
+  <div class="contact-grid">
+    <a class="contact-cell" href="mailto:agussimonet@gmail.com">
+      <div class="contact-label">Email</div>
+      <div class="contact-value">agussimonet@gmail.com <span class="arr">↗</span></div>
+    </a>
+    <a class="contact-cell" href="https://linkedin.com/in/agustinasimonet" target="_blank">
+      <div class="contact-label">LinkedIn</div>
+      <div class="contact-value">agustinasimonet <span class="arr">↗</span></div>
+    </a>
+    <a class="contact-cell" href="#" target="_blank">
+      <div class="contact-label">GitHub</div>
+      <div class="contact-value"><span data-lang="es">próximamente</span><span data-lang="en">coming soon</span> <span class="arr">↗</span></div>
+    </a>
+    <a class="contact-cell" href="#" target="_blank">
+      <div class="contact-label">Tableau Public</div>
+      <div class="contact-value"><span data-lang="es">próximamente</span><span data-lang="en">coming soon</span> <span class="arr">↗</span></div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <span>AGUSTINA SIMONET</span> · Data Analyst · Motorsport · Buenos Aires, Argentina
+</footer>
+
+<script>
+  function setLang(lang) {
+    document.body.className = document.body.className
+      .replace(/lang-\w+/, 'lang-' + lang);
+    document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.documentElement.lang = lang;
+  }
+
+  function setTheme(theme) {
+    /* añade o quita la clase "light" — todo lo demás lo hace el CSS */
+    document.body.classList.toggle('light', theme === 'light');
+    document.getElementById('btn-dark').classList.toggle('active', theme === 'dark');
+    document.getElementById('btn-light').classList.toggle('active', theme === 'light');
+    /* actualiza el color del trazo de telemetría */
+    document.getElementById('telem').style.stroke =
+      theme === 'light' ? '#1565c0' : '#5bb8ff';
+    /* guarda preferencia en localStorage para cuando se publique */
+    localStorage.setItem('theme', theme);
+  }
+
+  /* Restaura tema guardado al cargar */
+  (function() {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light') setTheme('light');
+  })();
+
+  /* Telemetría */
+  (function() {
+    const el = document.getElementById('telem');
+    const segs = [
+      {len:80,y:28},{len:50,y:95},{len:25,y:105},{len:90,y:82},{len:130,y:22},
+      {len:55,y:96},{len:30,y:108},{len:95,y:78},{len:160,y:18},{len:70,y:98},
+      {len:35,y:108},{len:80,y:72}
+    ];
+    let x = 0; const pts = [];
+    for (const s of segs) {
+      const steps = Math.ceil(s.len / 4);
+      for (let i = 0; i <= steps; i++) {
+        pts.push(`${(x + (i/steps)*s.len).toFixed(1)},${(s.y + Math.random()*3-1.5).toFixed(1)}`);
+      }
+      x += s.len;
+    }
+    el.setAttribute('points', pts.join(' '));
+    el.style.strokeDasharray = 3000;
+    el.style.strokeDashoffset = 3000;
+    el.style.transition = 'stroke-dashoffset 2.6s ease-out';
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.strokeDashoffset = '0'; }));
+  })();
+</script>
+</body>
+</html>
